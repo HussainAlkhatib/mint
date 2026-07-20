@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mint Tutorials — Edit Hub</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#e0f7ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mint Tutorials">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e0f7ff'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%23005f73'>❄️</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-secondary: #16161f;
+            --mint: #00f5c0;
+            --mint-glow: rgba(0, 245, 192, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #00f5c0;
+            --accent-glow: rgba(0, 245, 192, 0.4);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .mountain-bg {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40vh;
+            background: linear-gradient(to top, rgba(200, 220, 240, 0.15), transparent);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .mountain-bg::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10%;
+            right: -10%;
+            height: 100%;
+            background: 
+                linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0.03) 41%, transparent 41%),
+                linear-gradient(150deg, transparent 45%, rgba(255,255,255,0.02) 45%, rgba(255,255,255,0.02) 46%, transparent 46%),
+                linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.04) 35%, rgba(255,255,255,0.04) 36%, transparent 36%);
+            clip-path: polygon(0% 100%, 0% 60%, 8% 55%, 15% 50%, 22% 45%, 30% 40%, 38% 35%, 45% 30%, 50% 28%, 55% 30%, 62% 35%, 70% 40%, 78% 45%, 85% 50%, 92% 55%, 100% 60%, 100% 100%);
+        }
+        .crystal-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+            animation: crystalFloat 15s ease-in-out infinite;
+        }
+        .crystal-orb:nth-child(1) { width: 400px; height: 400px; background: rgba(0, 245, 192, 0.2); top: 10%; left: 10%; }
+        .crystal-orb:nth-child(2) { width: 300px; height: 300px; background: rgba(100, 200, 255, 0.15); top: 50%; right: 10%; animation-delay: -5s; }
+        .crystal-orb:nth-child(3) { width: 350px; height: 350px; background: rgba(255, 255, 255, 0.1); bottom: 20%; left: 30%; animation-delay: -10s; }
+        @keyframes crystalFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #fff;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 0;
+            animation: snowFall linear infinite;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes snowFall {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.9; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .glass-break {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            animation: glassShatter 0.8s ease-out forwards;
+        }
+        @keyframes glassShatter {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .glass-shard {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: shardFly 0.8s ease-out forwards;
+        }
+        @keyframes shardFly {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); opacity: 0; }
+        }
+        .settings-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 280px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            z-index: 200;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        .settings-panel.open { transform: translateX(0); }
+        .settings-toggle {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 201;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: all 0.3s;
+        }
+        .settings-toggle:hover { transform: scale(1.1); }
+        .settings-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+        .setting-group { margin-bottom: 1.5rem; }
+        .setting-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .season-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .season-btn {
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .season-btn.active {
+            background: var(--accent);
+            color: var(--bg-dark);
+            border-color: var(--accent);
+        }
+        .season-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .color-input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.7);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
+            letter-spacing: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .member-counter {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .member-counter span {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: rgba(0, 245, 192, 0.1);
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+        .btn::before {
+            content: '❄️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            opacity: 0;
+            transition: all 0.4s;
+            pointer-events: none;
+        }
+        .btn:active::before {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 1;
+            animation: frostBurst 0.6s ease-out;
+        }
+        @keyframes frostBurst {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            padding-top: 80px;
+        }
+        .hero-content { max-width: 900px; }
+        .hero-profile-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            backdrop-filter: blur(20px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px var(--accent-glow);
+        }
+        .profile-avatar { font-size: 4rem; }
+        .profile-info { text-align: right; }
+        .profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 245, 192, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .badge-icon { font-size: 1rem; }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            text-shadow: 0 0 30px var(--accent-glow);
+        }
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        .hero-tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+        .filter-tabs {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .filter-tab.active {
+            background: var(--accent);
+            color: var(--bg-dark);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
+        section {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        .section-header { margin-bottom: 2rem; }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+            text-shadow: 0 0 15px var(--accent-glow);
+        }
+        .section-description { color: var(--text-secondary); font-size: 1rem; }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .glass-card {
+            backdrop-filter: blur(15px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.4s;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card.visible { opacity: 1; transform: translateY(0); }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, var(--accent), transparent, var(--accent));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .glass-card:hover::before { opacity: 1; }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px var(--accent-glow);
+        }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        .card-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: rgba(0, 245, 192, 0.05);
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-link::before {
+            content: '❄️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: all 0.4s;
+            pointer-events: none;
+        }
+        .card-link:active::before {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 1;
+            animation: frostBurst 0.6s ease-out;
+        }
+        .card-link:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 99;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { transform: translateY(-5px); box-shadow: 0 0 30px var(--accent-glow); }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .header-container { padding: 0 1rem; }
+            section { padding: 2rem 1rem; }
+            .filter-tabs { padding: 0 1rem 1rem; }
+            .settings-panel { width: 90%; right: 5%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="crystal-orb"></div>
+    <div class="crystal-orb"></div>
+    <div class="crystal-orb"></div>
+    <div class="mountain-bg"></div>
+    <div id="snowContainer"></div>
+
+    <button class="settings-toggle" id="settingsToggle">⚙️</button>
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-title">⚙️ إعدادات الموقع</div>
+        <div class="setting-group">
+            <label class="setting-label">🍂 الفصل</label>
+            <div class="season-buttons">
+                <button class="season-btn active" data-season="winter">شتاء</button>
+                <button class="season-btn" data-season="spring">ربيع</button>
+                <button class="season-btn" data-season="summer">صيف</button>
+                <button class="season-btn" data-season="autumn">خريف</button>
+            </div>
+        </div>
+        <div class="setting-group">
+            <label class="setting-label">🎨 اللون الأساسي</label>
+            <input type="color" class="color-input" id="primaryColor" value="#00f5c0">
+        </div>
+        <div class="setting-group">
+            <label class="setting-label">✨ لون التوهج</label>
+            <input type="color" class="color-input" id="glowColor" value="#00f5c0">
+        </div>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <div class="logo">🌿 MINT</div>
+            <div class="header-actions">
+                <div class="member-counter">Members: <span id="memberCount">1,247</span></div>
+                <a href="https://t.me/Tutorial090" target="_blank" class="btn">Join Hub</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-profile-card">
+                <div class="profile-avatar">👑</div>
+                <div class="profile-info">
+                    <h1>Mint Tutorials</h1>
+                    <div class="profile-badge">
+                        <span class="badge-icon">✨</span>
+                        <span class="badge-text">Founder & CEO</span>
+                    </div>
+                </div>
+            </div>
+            <p class="hero-subtitle">Edit Like a Pro • Master GFX • Unlock AI</p>
+            <p class="hero-tagline">Master the art of video editing, programming, and AI-powered creativity. Join a community of editors, developers, and designers pushing the boundaries of digital content.</p>
+            <a href="https://t.me/Tutorial090" target="_blank" class="btn" style="font-size: 1.1rem; padding: 1rem 2rem; display: inline-block; text-decoration: none;">Explore Hub</a>
+        </div>
+    </section>
+
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="community">Community</button>
+        <button class="filter-tab" data-filter="tech">Tech</button>
+        <button class="filter-tab" data-filter="ai">AI</button>
+    </div>
+
+    <section data-category="community">
+        <div class="section-header">
+            <h2 class="section-title">💬 الشات العام</h2>
+            <p class="section-description">مركز النقاشات العامة للأعضاء</p>
+        </div>
+        <div class="cards-grid">
+            <div class="glass-card">
+                <div class="card-icon">🛠️</div>
+                <h3 class="card-title">أدوات الأعضاء</h3>
+                <p class="card-description">مجموعة من الأدوات والموارد المساعدة للأعضاء لتسريع عملهم في المونتاج والتصميم.</p>
+                <a href="https://t.me/Tutorial090/109708" target="_blank" class="card-link">❄️ ادوات الأعضاء</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">⚖️</div>
+                <h3 class="card-title">الإجراءات</h3>
+                <p class="card-description">التوجيهات الرسمية وقرارات الإدارة بخصوص المحتوى والإنذارات وحالات الطرد.</p>
+                <a href="https://t.me/Tutorial090/1" target="_blank" class="card-link">❄️ الإجراءات</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">📜</div>
+                <h3 class="card-title">القوانين</h3>
+                <p class="card-description">قوانين الكروب: حدود النشر، احترام حقوق الملكية، أنواع المحتوى المسموح، والسياسة العامة.</p>
+                <a href="https://t.me/Tutorial090/6" target="_blank" class="card-link">❄️ القوانين</a>
+            </div>
+        </div>
+    </section>
+
+    <section data-category="tech">
+        <div class="section-header">
+            <h2 class="section-title">💻 البرمجة</h2>
+            <p class="section-description">أكواد، مشاريع، وموارد تطوير</p>
+        </div>
+        <div class="cards-grid">
+            <div class="glass-card">
+                <div class="card-icon">🚀</div>
+                <h3 class="card-title">المشاريع</h3>
+                <p class="card-description">اعرض مشاريعك البرمجية، احصل على ملاحظات، وابحث عن متعاونين.</p>
+                <a href="https://t.me/Tutorial090/108194" target="_blank" class="card-link">❄️ المشاريع</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">🎬</div>
+                <h3 class="card-title">نود فيديو</h3>
+                <p class="card-description">شروحات ونصائح وحلول مشاكل لتطبيق Node Video - Pro Video Editor.</p>
+                <a href="https://t.me/Tutorial090/2" target="_blank" class="card-link">❄️ نود فيديو</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">🔤</div>
+                <h3 class="card-title">الخطوط</h3>
+                <p class="card-description">اكتشف وشارك خطوط، ستايلات كتابة، وتأثيرات نصية للعناوين والمقدمات.</p>
+                <a href="https://t.me/Tutorial090/110044" target="_blank" class="card-link">❄️ الخطوط</a>
+            </div>
+        </div>
+    </section>
+
+    <section data-category="ai">
+        <div class="section-header">
+            <h2 class="section-title">🤖 AI والتصميم</h2>
+            <p class="section-description">ذكاء اصطناعي وتأثيرات موشن</p>
+        </div>
+        <div class="cards-grid">
+            <div class="glass-card">
+                <div class="card-icon">🧠</div>
+                <h3 class="card-title">تطبيقات AI</h3>
+                <p class="card-description">أدوات ذكاء اصطناعي للمونتاج، استنساخ الصوت، إنشاء الصور، إزالة الخلفية، والأتمتة.</p>
+                <a href="https://t.me/Tutorial090/110667" target="_blank" class="card-link">❄️ تطبيقات AI</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">✨</div>
+                <h3 class="card-title">افتر افكت</h3>
+                <p class="card-description">تمبلات وOpening FX احترافية لرفع مستوى المقدمات والنهايات في مشاريعك.</p>
+                <a href="https://t.me/Tutorial090/45334" target="_blank" class="card-link">❄️ افتر افكت</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">🌐</div>
+                <h3 class="card-title">مواقع مفيدة</h3>
+                <p class="card-description">مواقع مختارة للمصممين والمحررين والمطورين لتحميل الأصول والبحث عن إلهام.</p>
+                <a href="https://t.me/Tutorial090/198347" target="_blank" class="card-link">❄️ المواقع</a>
+            </div>
+        </div>
+    </section>
+
+    <section data-category="motion">
+        <div class="section-header">
+            <h2 class="section-title">🎥 الطلبات والموشن</h2>
+            <p class="section-description">مجسمات، صوتيات، وموشن جرافيك</p>
+        </div>
+        <div class="cards-grid">
+            <div class="glass-card">
+                <div class="card-icon">🎨</div>
+                <h3 class="card-title">مجسمات 3D</h3>
+                <p class="card-description">اطلب أو شارك مجسمات ثلاثية الأبعاد، نسيج، وملفات جاهزة للاستخدام في المقدمات والثمبنايل.</p>
+                <a href="https://t.me/Tutorial090/74115" target="_blank" class="card-link">❄️ المجسمات</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">🔊</div>
+                <h3 class="card-title">صوتيات</h3>
+                <p class="card-description">باك صوتات عالية الجودة، SFX، whooshes، impacts، وأصوات محيطة للمحررين وموشن آرتست.</p>
+                <a href="https://t.me/Tutorial090/222045" target="_blank" class="card-link">❄️ الصوتيات</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">📱</div>
+                <h3 class="card-title">اللايت موشن</h3>
+                <p class="card-description">شروحات وبريزتات وأدلة كي فرام للمونتاج بالموبايل وتأثيرات اللايت موشن.</p>
+                <a href="https://t.me/Tutorial090/3" target="_blank" class="card-link">❄️ اللايت موشن</a>
+            </div>
+        </div>
+    </section>
+
+    <section data-category="extras">
+        <div class="section-header">
+            <h2 class="section-title">📦 الإضافات والإكسترا</h2>
+            <p class="section-description">باكس، معارض، ومواصفات تقنية</p>
+        </div>
+        <div class="cards-grid">
+            <div class="glass-card">
+                <div class="card-icon">🎁</div>
+                <h3 class="card-title">ملحقات الجفكس</h3>
+                <p class="card-description">باك جرافيك، أوفرلايز، ترانزشنس،-glitch، لايك ليك، وباندلز تأثيرات بصرية.</p>
+                <a href="https://t.me/Tutorial090/1076" target="_blank" class="card-link">❄️ ملحقات GFX</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">🏆</div>
+                <h3 class="card-title">أفضل إيديت بالأسبوع</h3>
+                <p class="card-description">شارك أفضل أعمالك، احصل على ملاحظات، واكتشف مونتاج ومشاريع رائعة من المجتمع.</p>
+                <a href="https://t.me/Tutorial090/167731" target="_blank" class="card-link">❄️ أفضل إيديت</a>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon">📐</div>
+                <h3 class="card-title">أبعاد الفيديو</h3>
+                <p class="card-description">أبعاد الفيديو، نسب العرض، الدقات، ومسافات الأمان لجميع المنصات.</p>
+                <a href="https://t.me/Tutorial090/201327" target="_blank" class="card-link">❄️ الأبعاد</a>
+            </div>
+        </div>
+    </section>
+
+    <button class="back-to-top" id="backToTop">↑</button>
+
+    <script>
+        const settingsToggle = document.getElementById('settingsToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+        settingsToggle.addEventListener('click', () => { settingsPanel.classList.toggle('open'); });
+
+        const seasons = {
+            winter: { primary: '#00f5c0', glow: 'rgba(0, 245, 192, 0.4)', bg: 'linear-gradient(135deg, #0a0a0f 0%, #16161f 100%)', snow: true },
+            spring: { primary: '#ff6b9d', glow: 'rgba(255, 107, 157, 0.4)', bg: 'linear-gradient(135deg, #1a0a1f 0%, #2d1f2d 100%)', snow: false },
+            summer: { primary: '#ffd93d', glow: 'rgba(255, 217, 61, 0.4)', bg: 'linear-gradient(135deg, #0f1a0a 0%, #1f2d1f 100%)', snow: false },
+            autumn: { primary: '#ff8c42', glow: 'rgba(255, 140, 66, 0.4)', bg: 'linear-gradient(135deg, #1a0f0a 0%, #2d1f1a 100%)', snow: false }
+        };
+
+        document.querySelectorAll('.season-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const season = seasons[btn.dataset.season];
+                document.documentElement.style.setProperty('--accent', season.primary);
+                document.documentElement.style.setProperty('--accent-glow', season.glow);
+                document.body.style.background = season.bg;
+                document.getElementById('snowContainer').style.display = season.snow ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('primaryColor').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--accent', e.target.value);
+            document.documentElement.style.setProperty('--mint', e.target.value);
+        });
+        document.getElementById('glowColor').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--accent-glow', e.target.value + '66');
+            document.documentElement.style.setProperty('--mint-glow', e.target.value + '66');
+        });
+
+        document.querySelectorAll('section[data-category]').forEach(section => {
+            section.addEventListener('click', (e) => {
+                const rect = section.getBoundingClientRect();
+                const x = e.clientX || (rect.left + rect.width / 2);
+                const y = e.clientY || (rect.top + rect.height / 2);
+                const breakEffect = document.createElement('div');
+                breakEffect.className = 'glass-break';
+                breakEffect.style.left = (x - 50) + 'px';
+                breakEffect.style.top = (y - 50) + 'px';
+                breakEffect.style.width = '100px';
+                breakEffect.style.height = '100px';
+                for (let i = 0; i < 8; i++) {
+                    const shard = document.createElement('div');
+                    shard.className = 'glass-shard';
+                    const angle = (i / 8) * Math.PI * 2;
+                    const distance = 50 + Math.random() * 50;
+                    shard.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                    shard.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+                    shard.style.setProperty('--rot', Math.random() * 360 + 'deg');
+                    shard.style.width = (Math.random() * 20 + 10) + 'px';
+                    shard.style.height = (Math.random() * 20 + 10) + 'px';
+                    shard.style.left = '50px';
+                    shard.style.top = '50px';
+                    breakEffect.appendChild(shard);
+                }
+                document.body.appendChild(breakEffect);
+                setTimeout(() => breakEffect.remove(), 800);
+            });
+        });
+
+        const snowContainer = document.getElementById('snowContainer');
+        const snowflakes = ['❄️', '❅', '❆', '✦', '•'];
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = (Math.random() * 6 + 8) + 's';
+            snowflake.style.fontSize = (Math.random() * 1.2 + 0.8) + 'rem';
+            snowflake.style.animationDelay = Math.random() * 3 + 's';
+            snowflake.style.opacity = Math.random() * 0.6 + 0.3;
+            snowContainer.appendChild(snowflake);
+            setTimeout(() => snowflake.remove(), 15000);
+        }
+        setInterval(createSnowflake, 800);
+        for (let i = 0; i < 20; i++) setTimeout(createSnowflake, i * 200);
+
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'), index * 100);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.glass-card').forEach(card => observer.observe(card));
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const filter = tab.dataset.filter;
+                document.querySelectorAll('section[data-category]').forEach(section => {
+                    section.style.display = (filter === 'all' || section.dataset.category === filter) ? 'block' : 'none';
+                });
+            });
+        });
+
+        const memberCountEl = document.getElementById('memberCount');
+        let currentCount = 1247;
+        setInterval(() => {
+            currentCount += Math.floor(Math.random() * 3) + 1;
+            memberCountEl.textContent = currentCount.toLocaleString();
+        }, 5000);
+
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            backToTopBtn.classList.toggle('visible', window.scrollY > 500);
+        });
+        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const rotateX = (y - rect.height / 2) / 10;
+                const rotateY = (rect.width / 2 - x) / 10;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
